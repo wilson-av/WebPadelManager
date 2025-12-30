@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+.rank-name {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+</style>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>
+        {{ competition.name }} —
+        Ranking do Dia {{ game_day.date.strftime('%d/%m/%Y') }} Grupo {{ game_day.group_name }}
+    </h2>
+
+    <a href="/matches/{{ game_day.id }}/matches"
+       class="btn btn-secondary">
+        ← voltar aos jogos
+    </a>
+</div>
+
+<table class="table table-striped table-bordered">
+    <thead>
+        <tr>
+            <th>#</th>
+            <th>Jogador</th>
+            <th>Jogos</th>
+            <th>W - T - L</th>
+            <th>WinRate (%)</th>
+            <th>Pontos Feitos</th>
+            <th>Pontos Sofridos</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for r in ranking %}
+        <tr>
+            <td>
+                <div class="rank-name">
+                {% if loop.index == 1 %}🥇
+                {% elif loop.index == 2 %}🥈
+                {% elif loop.index == 3 %}🥉
+                {% endif %}
+                {{loop.index}}
+                </div>
+            </td>
+            <td>{{ r.name }}</td>
+            <td>{{ r.games }}</td>
+            <td>{{ r.record }}</td>
+            <td>{{ r.win_rate }}</td>
+            <td>{{ r.points }}</td>
+            <td>{{ r.points_against }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

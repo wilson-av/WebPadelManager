@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+.rank-name {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+</style>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3>Ranking – Torneio "{{ competition.name }}"</h3>
+    <a href="/competitions" class="btn btn-secondary">← Voltar</a>
+</div>
+
+<table class="table table-sm table-striped align-middle">
+    <thead class="table-dark">
+        <tr>
+            <th>#</th>
+            <th>Jogador</th>
+            <th class="text-center">Jogos</th>
+            <th class="text-center">W - T - L</th>
+            <th class="text-center">WinRate %</th>
+            <th class="text-center">Pontos Feitos</th>
+            <th class="text-center">Pontos Sofridos</th>
+            <th class="text-center">Pontos</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for r in ranking %}
+        <tr>
+            <td>
+                <div class="rank-name">
+                {% if loop.index == 1 %}🥇
+                {% elif loop.index == 2 %}🥈
+                {% elif loop.index == 3 %}🥉
+                {% endif %}
+                {{loop.index}}
+                </div>
+            </td>
+            <td>{{ r.name }}</td>
+            <td class="text-center">{{ r.games }}</td>
+            <td class="text-center">
+                {{ r.wins }} - {{ r.ties }} - {{ r.losses }}
+            </td>
+            <td class="text-center">
+                {{ r.win_rate }}%
+            </td>
+            <td class="text-center">
+                {{ r.points_for }}
+            </td>
+            <td class="text-center">
+                {{ r.points_against }}
+            </td>
+            <td class="text-center fw-bold">
+                {{ r.points }}
+            </td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="8" class="text-center text-muted">
+                Ainda não existem jogos registados
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

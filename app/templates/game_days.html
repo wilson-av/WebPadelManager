@@ -1,0 +1,287 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<style>
+
+/* ---------- SELECTS ---------- */
+.admin-select,
+.admin-select-selected {
+    height: 260px;
+    border-radius: 10px;
+    border: 1px solid #ced4da;
+    background: #ffffff; /* mantém branco */
+    box-shadow: inset 0 1px 2px rgba(0,0,0,.08);
+    padding: 6px;
+    font-size: 0.95rem;
+}
+
+.admin-select option,
+.admin-select-selected option {
+    padding: 6px;
+}
+
+.admin-select:focus,
+.admin-select-selected:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 .15rem rgba(13,110,253,.25);
+}
+
+/* ---------- BOTÕES ---------- */
+.dual-buttons button {
+    width: 44px;
+    font-weight: bold;
+}
+
+/* ---------- BODY ---------- */
+.card-body {
+    background: #ffffff;
+    border-radius: 12px;
+}
+
+.form-label {
+    font-weight: 600;
+}
+</style>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>{{ competition.name }} ({{ competition.start_date }} - {{ competition.end_date }}) - Dias de Jogo</h2>
+    <div class="d-flex gap-2">
+        <a href="/game-days/new/{{ competition.id }}" class="btn btn-success">➕ Criar Dia de Jogo</a>
+        <a href="/competitions" class="btn btn-secondary">← voltar para competições</a>
+    </div>
+</div>
+
+{% if game_days %}
+{% for day in game_days %}
+<div class="card mb-3">
+
+    <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+
+        <div><strong>Data:</strong> {{ day.date.strftime("%d/%m/%Y") }}</div>
+
+        <div>
+            <strong>Jogadores:</strong>
+            <span class="badge {% if day.current_players == day.max_players %}bg-success
+            {% elif day.current_players < day.max_players %}bg-secondary{% else %}bg-warning text-dark{% endif %}">
+                {{ day.current_players }} / {{ day.max_players }}
+            </span>
+        </div>
+
+        <div>
+            <strong>Status:</strong>
+            {% if day.has_matches %}
+                ✅ Jogos Gerados
+            {% else %}
+                ⚪ Por Gerar
+            {% endif %}
+        </div>
+
+        <div>
+            <strong>Grupo: {{ day.group_name }}</strong>
+        </div>
+        <div class="d-flex align-items-center gap-2 ms-auto flex-wrap">
+
+            <form method="post" action="/game-days/update-fields/{{ day.id }}" class="d-flex align-items-center gap-1">
+                <label class="form-label mb-0">Nº Campos:</label>
+                <input type="number"
+                       name="num_courts"
+                       class="form-control form-control-sm"
+                       style="width: 70px"
+                       value="{{ day.num_courts }}"
+                       min="2"
+                       {% if day.has_matches %}disabled{% else %}required{% endif %}>
+                <button class="btn btn-sm btn-primary" {% if day.has_matches %}disabled{% endif %}>
+                    Atualizar
+                </button>
+            </form>
+
+            <button class="btn btn-sm btn-outline-primary"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#players-{{ day.id }}">
+                Jogadores
+            </button>
+
+            <a href="/matches/{{ day.id }}/matches" class="btn btn-sm btn-outline-primary">
+                ⚙️ Gerir Jogos do Dia
+            </a>
+
+            {% if not day.has_matches and day.current_players == 0 %}
+            <form method="post"
+                  action="/game-days/delete/{{ day.id }}"
+                  onsubmit="return confirm('Tem a certeza que deseja eliminar este dia de jogo?');">
+                <button class="btn btn-sm btn-danger">
+                    🗑️ Eliminar Dia
+                </button>
+            </form>
+            {% else %}
+            <button class="btn btn-sm btn-secondary" disabled>
+                🔒 Eliminar Dia
+            </button>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- JOGADORES -->
+    <div id="players-{{ day.id }}" class="collapse">
+        <div class="card-body">
+
+            <form method="post"
+                  action="/game-days/update-players/{{ day.id }}"
+                  onsubmit="selectAll('{{ day.id }}')">
+
+                <div class="row align-items-center">
+
+                    <!-- DISPONÍVEIS -->
+                    <div class="col-md-5">
+                        <label class="form-label">Jogadores Disponíveis
+                            (<span id="count-available-{{ day.id }}">0</span>)
+                        </label>
+                        <input type="text"
+                               class="form-control mb-2"
+                               placeholder="🔍 Procurar..."
+                               onkeyup="filterOptions(this, 'available-{{ day.id }}', '{{ day.id }}')">
+
+                        <select id="available-{{ day.id }}"
+                                class="form-select admin-select"
+                                multiple
+                                ondblclick="moveOnDoubleClick(this, 'selected-{{ day.id }}')"
+                                {% if day.has_matches %}disabled{% endif %}>
+                            {% for p in all_players %}
+                                {% if p not in day.players %}
+                                    <option value="{{ p.id }}">{{ p.name }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- BOTÕES -->
+                    <div class="col-md-2 d-flex flex-column justify-content-center align-items-center gap-2 dual-buttons">
+                        <button type="button"
+                                class="btn btn-outline-primary"
+                                onclick="moveSelected('available-{{ day.id }}','selected-{{ day.id }}','{{ day.id }}')"
+                                {% if day.has_matches %}disabled{% endif %}>
+                            &gt;
+                        </button>
+                        <button type="button"
+                                class="btn btn-outline-primary"
+                                onclick="moveSelected('selected-{{ day.id }}','available-{{ day.id }}','{{ day.id }}')"
+                                {% if day.has_matches %}disabled{% endif %}>
+                            &lt;
+                        </button>
+                    </div>
+
+                    <!-- INSCRITOS -->
+                    <div class="col-md-5">
+                        <label class="form-label">Jogadores Inscritos
+                            (<span id="count-selected-{{ day.id }}">0</span>)
+                        </label>
+                        <select id="selected-{{ day.id }}"
+                                name="player_ids"
+                                class="form-select admin-select-selected"
+                                multiple
+                                ondblclick="moveOnDoubleClick(this, 'available-{{ day.id }}')"
+                                {% if day.has_matches %}disabled{% endif %}>
+                            {% for p in day.players %}
+                                <option value="{{ p.id }}">{{ p.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                </div>
+
+                <div class="mt-3 text-end">
+                    <button class="btn btn-success" {% if day.has_matches %}disabled{% endif %}>
+                        💾 Guardar Alterações
+                    </button>
+                </div>
+
+            </form>
+
+            {% if day.has_matches %}
+            <div class="alert alert-warning mt-3 mb-0">
+                ⚠️ Não é possível alterar jogadores após os jogos serem gerados.
+            </div>
+            {% endif %}
+
+        </div>
+    </div>
+
+</div>
+{% endfor %}
+{% else %}
+<p class="text-muted">Nenhum dia de jogo criado</p>
+{% endif %}
+
+<script>
+function moveSelected(fromId, toId, dayId) {
+    const from = document.getElementById(fromId);
+    const to = document.getElementById(toId);
+
+    Array.from(from.selectedOptions).forEach(option => {
+        to.add(option);
+    });
+
+    updateCounts(dayId);
+}
+
+function selectAll(dayId) {
+    const selected = document.getElementById("selected-" + dayId);
+    Array.from(selected.options).forEach(opt => opt.selected = true);
+}
+
+function filterOptions(input, selectId, dayId) {
+    const filter = input.value.toLowerCase();
+    const select = document.getElementById(selectId);
+
+    Array.from(select.options).forEach(option => {
+        option.style.display = option.text.toLowerCase().includes(filter)
+            ? ''
+            : 'none';
+    });
+
+    updateCounts(dayId);
+}
+
+function updateCounts(dayId) {
+    const available = document.getElementById("available-" + dayId);
+    const selected = document.getElementById("selected-" + dayId);
+
+    const availableCount = Array.from(available.options)
+        .filter(opt => opt.style.display !== 'none').length;
+
+    const selectedCount = selected.options.length;
+
+    document.getElementById("count-available-" + dayId).innerText = availableCount;
+    document.getElementById("count-selected-" + dayId).innerText = selectedCount;
+}
+
+/* 🔁 Duplo clique */
+function enableDoubleClick(dayId) {
+    const available = document.getElementById("available-" + dayId);
+    const selected = document.getElementById("selected-" + dayId);
+
+    available.ondblclick = () => moveSelected(
+        "available-" + dayId,
+        "selected-" + dayId,
+        dayId
+    );
+
+    selected.ondblclick = () => moveSelected(
+        "selected-" + dayId,
+        "available-" + dayId,
+        dayId
+    );
+}
+
+/* 🚀 Inicialização */
+document.addEventListener("DOMContentLoaded", () => {
+    {% for day in game_days %}
+        updateCounts("{{ day.id }}");
+        enableDoubleClick("{{ day.id }}");
+    {% endfor %}
+});
+</script>
+
+
+{% endblock %}

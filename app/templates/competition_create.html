@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>Criar Competição</h3>
+
+<form method="post">
+  <div class="mb-3">
+    <label class="form-label">Nome</label>
+    <input class="form-control" name="name" required>
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Data início</label>
+    <input type="date" class="form-control" name="start_date" required>
+  </div>
+
+  <div class="mb-3">
+    <label class="form-label">Data fim</label>
+    <input type="date" class="form-control" name="end_date" required>
+  </div>
+
+  <button class="btn btn-success">Criar</button>
+  <a href="/competitions" class="btn btn-secondary">Cancelar</a>
+</form>
+{% endblock %}

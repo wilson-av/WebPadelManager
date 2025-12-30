@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% if error_message %}
+<div class="alert" style="background-color: #fff3cd; color: #856404; border-radius: 5px; padding: 10px; margin-bottom: 10px;">
+    {{ error_message }}
+</div>
+{% endif %}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3>Jogadores</h3>
+    <a href="/players/new" class="btn btn-success">➕ Novo Jogador</a>
+</div>
+
+<table class="table table-striped align-middle">
+    <thead>
+        <tr>
+            <th>Nome</th>
+            <th>Sexo</th>
+            <th>Nível</th>
+            <th>Nascimento</th>
+            <th>Idade</th>
+            <th>Jogos Realizados</th>
+            <th class="text-end">Ações</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for p in players %}
+        <tr>
+            <td>🎾{{ p.name }}</td>
+            <td>
+                {% if p.sexo == "M" %}
+                    Masculino
+                {% elif p.sexo == "F" %}
+                    Feminino
+                {% else %}
+                    -
+                {% endif %}
+            </td>
+            <td>{{ p.nivel or "-" }}</td>
+            <td>{{ p.data_nascimento.strftime("%d/%m/%Y") }}</td>
+            <td>{{ p.idade or "-" }}</td>
+            <td>
+                <img src="{{ url_for('static', path='images/padel_ball.png') }}" alt="Padel" style="width: 18px; height: 18px;">
+            {{ matches[p.id] }}
+            </td>
+            <td class="text-end">
+                <a href="/players/edit/{{ p.id }}" class="btn btn-sm btn-outline-secondary">
+                    Editar
+                </a>
+            </td>
+            <td>
+            <form method="post"
+                  action="/players/delete/{{ p.id }}"
+                  onsubmit="return confirm('Tem a certeza que deseja eliminar este jogador?');">
+                <button class="btn btn-sm btn-danger">
+                    🗑️ Eliminar
+                </button>
+            </form>
+            </td>
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="4" class="text-center text-muted">
+                Nenhum jogador registado
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

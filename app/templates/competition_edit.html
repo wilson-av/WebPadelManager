@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block content %}
+<h3>Editar Torneio</h3>
+
+<form method="post">
+  <div class="mb-3">
+    <label class="form-label">Nome</label>
+    <input class="form-control" name="name" value="{{ competition.name }}" required>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Data de Início</label>
+    <input type="date" class="form-control" name="start_date" value="{{ competition.start_date }}">
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Data de Fim</label>
+    <input type="date" class="form-control" name="end_date" value="{{ competition.end_date }}">
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Estado</label>
+    <select class="form-select" name="status">
+      <option value="Por iniciar" {% if competition.status == 'Por iniciar' %}selected{% endif %}>Por iniciar</option>
+      <option value="Em curso" {% if competition.status == 'Em curso' %}selected{% endif %}>Em curso</option>
+      <option value="Terminado" {% if competition.status == 'Terminado' %}selected{% endif %}>Terminado</option>
+    </select>
+  </div>
+  <button class="btn btn-primary">Atualizar</button>
+  <a href="/competitions" class="btn btn-secondary">Cancelar</a>
+</form>
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% if error_message %}
+<div class="alert" style="background-color: #fff3cd; color: #856404; border-radius: 5px; padding: 10px; margin-bottom: 10px;">
+    {{ error_message }}
+</div>
+{% endif %}
+
+<h2>Criar Jogador 🎾</h2>
+
+<form method="post">
+
+    <!-- Linha 1: Nome -->
+    <div class="mb-3">
+        <label class="form-label">Nome</label>
+        <input type="text" name="name" class="form-control form-control-sm" value="{{ name or '' }}" required>
+    </div>
+
+    <!-- Linha 2: Sexo e Nível -->
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label class="form-label">Sexo</label>
+            <select name="sexo" class="form-select form-select-sm" required>
+                <option value="M" {% if sexo == 'M' %}selected{% endif %}>Masculino</option>
+                <option value="F" {% if sexo == 'F' %}selected{% endif %}>Feminino</option>
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Nível</label>
+            <select name="nivel" class="form-select form-select-sm" required>
+                <option value="M1" {% if nivel == 'M1' %}selected{% endif %}>M1</option>
+                <option value="F1" {% if nivel == 'F1' %}selected{% endif %}>F1</option>
+                <option value="M2" {% if nivel == 'M2' %}selected{% endif %}>M2</option>
+                <option value="F2" {% if nivel == 'F2' %}selected{% endif %}>F2</option>
+                <option value="M3" {% if nivel == 'M3' %}selected{% endif %}>M3</option>
+                <option value="F3" {% if nivel == 'F3' %}selected{% endif %}>F3</option>
+                <option value="M4" {% if nivel == 'M4' %}selected{% endif %}>M4</option>
+                <option value="F4" {% if nivel == 'F4' %}selected{% endif %}>F4</option>
+                <option value="M5" {% if nivel == 'M5' %}selected{% endif %}>M5</option>
+                <option value="F5" {% if nivel == 'F5' %}selected{% endif %}>F5</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Linha 3: Data Nascimento e Idade -->
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <label class="form-label">Data Nascimento</label>
+            <input type="date" class="form-control form-control-sm" name="data_nascimento" value="{{ data_nascimento or '' }}" required>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">Idade</label>
+            <input type="text" class="form-control form-control-sm" 
+                   value="{% if data_nascimento %}{{ ((now() - data_nascimento).days // 365) }}{% endif %}" 
+                   readonly title="Idade calculada automaticamente">
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-success">Criar</button>
+    <a href="/players" class="btn btn-secondary">Cancelar</a>
+
+</form>
+
+{% endblock %}
