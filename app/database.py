@@ -5,8 +5,8 @@ import os
 #DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///./padel.db")
 
 # Example for PostgreSQL
-DATABASE_URL = "postgresql://padeldb_ekmh_user:Tk633PGsQnCy37eMyYJWFpVgh57Gm5co@dpg-d59hj3uuk2gs73e7876g-a.virginia-postgres.render.com/padeldb_ekmh"
-# postgresql://padeldb_ekmh_user:Tk633PGsQnCy37eMyYJWFpVgh57Gm5co@dpg-d59hj3uuk2gs73e7876g-a/padeldb_ekmh"
+#DATABASE_URL = "postgresql://padeldb_ekmh_user:Tk633PGsQnCy37eMyYJWFpVgh57Gm5co@dpg-d59hj3uuk2gs73e7876g-a.virginia-postgres.render.com/padeldb_ekmh"
+DATABASE_URL = "postgresql://padeldb_ekmh_user:Tk633PGsQnCy37eMyYJWFpVgh57Gm5co@dpg-d59hj3uuk2gs73e7876g-a/padeldb_ekmh"
 
 connect_args = {}
 
