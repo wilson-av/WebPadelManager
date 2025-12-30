@@ -10,9 +10,6 @@ from app.models.player import Player
 from app.services.competition_service import get_by_id
 
 from fastapi.responses import StreamingResponse
-from reportlab.lib.pagesizes import A4
-from reportlab.pdfgen import canvas
-from reportlab.lib.units import cm
 import io
 
 
@@ -115,106 +112,5 @@ def view_matches(game_day_id: str, request: Request, db: Session = Depends(get_d
             "all_players_dict": all_players_dict,
             "summary": summary,
             "top3": top3  # <-- enviar para o template
-        }
-    )
-
-@router.get("/{game_day_id}/results-pdf")
-def generate_results_pdf(
-    game_day_id: str,
-    db: Session = Depends(get_db)
-):
-    game_day = db.query(GameDay).filter(GameDay.id == game_day_id).first()
-    if not game_day:
-        raise HTTPException(404, "Game day not found")
-
-    competition = get_by_id(db, game_day.competition_id)
-
-    matches = (
-        db.query(Match)
-        .filter(Match.game_day_id == game_day_id)
-        .order_by(Match.order, Match.court)
-        .all()
-    )
-
-    players = db.query(Player).all()
-    players_dict = {p.id: p.name for p in players}
-
-    buffer = io.BytesIO()
-    pdf = canvas.Canvas(buffer, pagesize=A4)
-    width, height = A4
-
-    y = height - 2 * cm
-
-    # Título
-    pdf.setFont("Helvetica-Bold", 16)
-    pdf.drawCentredString(width / 2, y, competition.name)
-    y -= 20
-    pdf.setFont("Helvetica", 12)
-    pdf.drawCentredString(
-        width / 2,
-        y,
-        f"Jogos de {game_day.date.strftime('%d/%m/%Y')}"
-    )
-
-    y -= 30
-
-    current_round = None
-    pdf.setFont("Helvetica", 10)
-
-    for match in matches:
-        if match.order != current_round:
-            if y < 4 * cm:
-                pdf.showPage()
-                y = height - 2 * cm
-
-            y -= 15
-            pdf.setFont("Helvetica-Bold", 12)
-            pdf.drawCentredString(
-                width / 2,
-                y,
-                f"Round {match.order}"
-            )
-            y -= 20
-            pdf.setFont("Helvetica", 10)
-            current_round = match.order
-
-        team_a = [
-            players_dict[pid]
-            for pid in match.team_a_players.split(',')
-        ]
-        team_b = [
-            players_dict[pid]
-            for pid in match.team_b_players.split(',')
-        ]
-
-        pdf.drawString(2 * cm, y, " / ".join(team_a))
-        pdf.drawCentredString(
-            width / 2 - 20,
-            y,
-            str(match.points_team_a)
-        )
-        pdf.drawCentredString(width / 2, y, "VS")
-        pdf.drawCentredString(
-            width / 2 + 20,
-            y,
-            str(match.points_team_b)
-        )
-        pdf.drawRightString(
-            width - 2 * cm,
-            y,
-            " / ".join(team_b)
-        )
-
-        y -= 15
-
-    pdf.save()
-    buffer.seek(0)
-
-    return StreamingResponse(
-        buffer,
-        media_type="application/pdf",
-        headers={
-            "Content-Disposition":
-                f"attachment; filename=resultados_{game_day.date}.pdf"
         }
     )
